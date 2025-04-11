@@ -1,8 +1,8 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Product, Project
-from .serializers import ProductSerializer, ProjectSerializer
+from .models import Product, Project, Category, SubCategory
+from .serializers import ProductSerializer, ProjectSerializer, CategorySerializer, SubCategorySerializer
 
 
 class ProductListView(generics.ListAPIView):
@@ -38,20 +38,33 @@ class ToggleFavoriteView(APIView):
 
 class TimeReportView(APIView):
     def get(self, request):
-        # Получаем последний проект
-        project = Project.objects.last()  # Возвращает последний объект проекта
+        project = Project.objects.last()
         if not project:
             return Response({"detail": "No project found"}, status=404)
 
-        # Получаем время до конца (если проект еще не завершен)
-        time_remaining = project.get_time_remaining()  # Время, которое осталось
+        time_remaining = project.get_time_remaining()
 
-        # Сериализуем объект проекта
         project_data = ProjectSerializer(project).data
 
-        # Возвращаем данные проекта и время до окончания
         return Response({
             "project": project_data,
             "time_remaining": time_remaining
         })
 
+
+class CategoryListView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_serializer_context(self):
+        return {'request': self.request}
+
+
+class SubCategoryListView(generics.ListAPIView):
+    queryset = SubCategory.objects.all()
+    serializer_class = SubCategorySerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_serializer_context(self):
+        return {'request': self.request}
